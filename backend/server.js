@@ -96,7 +96,7 @@ function buildApp({ pool } = {}) {
   });
 
   app.get('/test1', (req, res) => {
-    res.send("OK V1");
+    res.send("OK V1 + V2");
   });
 
   // Endpoint Prometheus (scrape)
