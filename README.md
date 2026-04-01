@@ -147,6 +147,43 @@ Workflow : `.github/workflows/ci.yml`
 
 ---
 
+## Exercice 7 — Gestion des secrets et déclencheurs
+
+### a) Secrets nécessaires (GitHub Actions)
+
+Dans ce projet, le push d’images vers **GHCR** utilise `GITHUB_TOKEN` (token éphémère injecté automatiquement par GitHub Actions) avec la permission `packages: write`.
+
+Configuration à vérifier côté GitHub :
+- Repo → **Settings** → **Actions** → **General**
+- Section **Workflow permissions** → sélectionner **Read and write permissions** (sinon le push GHCR peut être bloqué selon la config du repo)
+
+Si tu changes de registry (Docker Hub / GitLab Registry), il faut créer des secrets Actions et les référencer dans le workflow :
+- `REGISTRY_USERNAME` : login registry
+- `REGISTRY_PASSWORD` ou `REGISTRY_TOKEN` : token/MDP registry
+
+Chemin GitHub : Repo → **Settings** → **Secrets and variables** → **Actions** → **New repository secret**.
+
+### b) Déclencheurs (push develop + PR vers main)
+
+Ils sont déjà configurés dans le workflow GitHub Actions :
+- Déclenchement sur chaque `push` sur `develop`
+- Déclenchement sur chaque `pull_request` vers `main`
+
+### c) Pourquoi ne jamais stocker de secrets en clair dans un fichier CI ?
+
+On ne stocke jamais de secrets en clair (dans un YAML de CI, dans le repo, ou dans une image) car :
+- Un secret commité est souvent **répliqué** (forks, clones, caches CI, logs) et devient très difficile à révoquer complètement.
+- Les logs CI peuvent **exposer** des variables si une commande echo/stacktrace les affiche.
+- En cas d’accès au dépôt (collaborateur, token compromis), un attaquant peut **pousser des images malveillantes**, accéder à la base, ou exfiltrer des données.
+
+Risques concrets :
+- Compromission du registry (push/pull non autorisés)
+- Accès à la base de données (lecture/altération)
+- Facturation/abus (ressources cloud consommées)
+- Mouvement latéral (réutilisation du secret sur d’autres services)
+
+---
+
 ## Partie 4 — Kubernetes
 
 Manifests dans `k8s/` :
