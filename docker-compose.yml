@@ -1,0 +1,63 @@
+version: "3.9"
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: vitalsync-postgres
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-vitalsync}
+      POSTGRES_USER: ${POSTGRES_USER:-vitalsync}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-vitalsync_password}
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    networks:
+      - vitalsync-net
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-vitalsync} -d ${POSTGRES_DB:-vitalsync}"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  backend:
+    build:
+      context: ./backend
+    container_name: vitalsync-backend
+    environment:
+      PORT: 3000
+      NODE_ENV: ${NODE_ENV:-production}
+      DB_HOST: ${DB_HOST:-postgres}
+      DB_PORT: ${DB_PORT:-5432}
+      DB_NAME: ${DB_NAME:-vitalsync}
+      DB_USER: ${DB_USER:-vitalsync}
+      DB_PASSWORD: ${DB_PASSWORD:-vitalsync_password}
+    ports:
+      - "3000:3000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - vitalsync-net
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ./frontend
+    container_name: vitalsync-frontend
+    ports:
+      - "8081:80"
+    depends_on:
+      - backend
+    networks:
+      - vitalsync-net
+    restart: unless-stopped
+
+networks:
+  vitalsync-net:
+    name: vitalsync-net
+    driver: bridge
+
+volumes:
+  pgdata:
+    name: vitalsync-pgdata

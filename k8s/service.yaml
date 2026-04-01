@@ -1,0 +1,37 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: vitalsync-backend
+spec:
+  type: ClusterIP
+  selector:
+    app: vitalsync-backend
+  ports:
+    - name: http
+      port: 3000
+      targetPort: 3000
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: vitalsync-frontend
+spec:
+  type: ClusterIP
+  selector:
+    app: vitalsync-frontend
+  ports:
+    - name: http
+      port: 80
+      targetPort: 80
+---
+# Optionnel : service DNS attendu par le backend (si Postgres est géré à part)
+apiVersion: v1
+kind: Service
+metadata:
+  name: vitalsync-postgres
+spec:
+  type: ClusterIP
+  ports:
+    - name: postgres
+      port: 5432
+      targetPort: 5432
