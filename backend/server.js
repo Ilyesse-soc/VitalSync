@@ -73,7 +73,7 @@ function buildApp({ pool } = {}) {
 
   // Healthchecks
   app.get('/health', (req, res) => {
-    res.status(200).json(healthPayload());
+    res.json({ status: 'updated' });
   });
 
   // Même healthcheck derrière le proxy Nginx (/api -> backend)
